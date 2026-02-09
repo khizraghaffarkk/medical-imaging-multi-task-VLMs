@@ -3,7 +3,7 @@
 # ================================
 
 # --- Step 0: Variables ---
-$envName = "llava-med"
+$envName = "llava-med2"
 $pythonVersion = "3.10"
 $modelName = "microsoft/llava-med-v1.5-mistral-7b"
 
@@ -28,7 +28,13 @@ if ($envs -notmatch $envName) {
 conda activate $envName
 
 # --- Step 4: Upgrade pip and install repo in editable mode ---
-pip install --upgrade pip
+python -m pip install --upgrade pip
+
+# Install torch first (CUDA)
+pip uninstall torch torchvision torchaudio -y
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
+
+# Then install repo
 pip install -e .
 
 # --- Step 5: Verify GPU availability ---
@@ -41,31 +47,20 @@ pip uninstall bitsandbytes -y
 
 # --- Step 7: Pin compatible package versions ---
 pip install "accelerate<0.27" "transformers<4.39"
-
-# --- Step 8: Launch Inference Instructions ---
+# --- Step 8: Auto Launch Inference Services ---
 Write-Host "`nStarting LLaVA-Med Inference..."
-Write-Host "Open THREE separate PowerShell windows for best experience."
+Write-Host "This script will automatically open THREE separate PowerShell windows:"
+Write-Host "  (1) Controller"
+Write-Host "  (2) Model Worker"
+Write-Host "  (3) Gradio Web UI"
+Write-Host "`nPlease wait until all services finish loading..."
+Write-Host "Then open your browser at: http://localhost:7860"
+Write-Host "Upload medical images and ask questions to the LLaVA-Med model or use default images."
 
-# ------------------------------
-# Controller (Window 1)
-# ------------------------------
-Write-Host "`n--- Controller ---"
-Write-Host "Run in Window 1:"
-Write-Host "python -m llava.serve.controller --host 0.0.0.0 --port 10000"
+$controllerCmd = "cd `"$ScriptDir`"; conda activate $envName; python -m llava.serve.controller --host 0.0.0.0 --port 10000"
+$workerCmd = "cd `"$ScriptDir`"; conda activate $envName; python -m llava.serve.model_worker --controller http://localhost:10000 --port 40000 --worker http://localhost:40000 --model-path $modelName --multi-modal"
+$gradioCmd = "cd `"$ScriptDir`"; conda activate $envName; python -m llava.serve.gradio_web_server --controller http://localhost:10000 --port 7860"
 
-# ------------------------------
-# Model Worker (Window 2)
-# ------------------------------
-Write-Host "`n--- Model Worker ---"
-Write-Host "Run in Window 2 (adjust for GPU VRAM if needed):"
-Write-Host "python -m llava.serve.model_worker --controller http://localhost:10000 --port 40000 --worker http://localhost:40000 --model-path $modelName --multi-modal"
-
-# ------------------------------
-# Web UI (Window 3)
-# ------------------------------
-Write-Host "`n--- Web UI (Gradio) ---"
-Write-Host "Run in Window 3:"
-Write-Host "python -m llava.serve.gradio_web_server --controller http://localhost:10000 --port 7860"
-
-Write-Host "`nAfter running all three, open your browser at http://localhost:7860 to start inference."
-Write-Host "Upload medical images and ask questions to the LLaVA-Med model."
+Start-Process powershell "-NoExit -Command $controllerCmd"
+Start-Process powershell "-NoExit -Command $workerCmd"
+Start-Process powershell "-NoExit -Command $gradioCmd"
