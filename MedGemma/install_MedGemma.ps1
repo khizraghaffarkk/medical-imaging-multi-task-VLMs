@@ -23,22 +23,27 @@ if ($envs -notmatch $envName) {
 # --- Step 2: Activate environment ---
 conda activate $envName
 
-# --- Step 3: Upgrade pip and install repo ---
+# --- Step 3: Upgrade pip ---
 python -m pip install --upgrade pip
 
-# Install torch with CUDA for GPU scripts
+# --- Step 4: Install PyTorch with CUDA (if GPU available) ---
 pip uninstall torch torchvision torchaudio -y
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
 
-# Install other dependencies
-pip install -r requirements.txt
+# --- Step 5: Install all other Python dependencies ---
+pip install gradio transformers Pillow numpy scikit-image pydicom
 
-# --- Step 4: Verify GPU availability ---
+# --- Step 6: Install additional dependencies from requirements.txt if exists ---
+if (Test-Path "requirements.txt") {
+    pip install -r requirements.txt
+}
+
+# --- Step 7: Verify GPU availability ---
 $gpuCheck = python -c "import torch; print(torch.cuda.is_available(), torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'No GPU detected')"
 Write-Host "`nGPU Check:"
 Write-Host $gpuCheck
 
-# --- Step 5: Inference Controller ---
+# --- Step 8: Inference Controller ---
 do {
     Write-Host "`nSelect which inference to run:"
     Write-Host "1: Analyze single CT image"
