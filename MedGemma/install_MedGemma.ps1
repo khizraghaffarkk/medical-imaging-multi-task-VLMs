@@ -3,7 +3,7 @@
 # ================================
 
 # --- Step 0: Variables ---
-$envName = "med-gemma2"
+$envName = "med-gemma"
 $pythonVersion = "3.10"
 
 # Detect script folder
