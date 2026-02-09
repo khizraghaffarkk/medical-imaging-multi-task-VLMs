@@ -23,6 +23,8 @@ If you have downloaded the following files from this repository:
 
 The script will automatically create a conda environment, install Python packages, verify GPU availability, and allow you to run inference scripts interactively.
 
+📌 **Note:** Since the GUI scripts use **different ports**, you can run all three tasks simultaneously in different PowerShell terminals if needed.
+
 ----------
 
 ### Project Structure
@@ -175,3 +177,4 @@ Run the script corresponding to your task:
 conda deactivate
 conda env remove -n med-gemma2
 ```
+
