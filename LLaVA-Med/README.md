@@ -188,7 +188,7 @@ pip install "accelerate<0.27"  "transformers<4.39"`
 ```
 ----------
 
-### 3. Launch Inference
+### 6. Launch Inference
 
 Open **three separate PowerShell windows**:
 
