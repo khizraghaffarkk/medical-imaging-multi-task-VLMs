@@ -42,7 +42,7 @@ You do **not** need to clone the original Microsoft repo separately.
 
 After cloning this repository, your folder should look like this:
 ```plaintext
-`medical-imaging-multi-task-vision-language-models/
+medical-imaging-multi-task-vision-language-models/
 ├── LLaVA-Med/
 │   ├── llava/                  # LLaVA-Med code & other directories
 │   ├── install_LLaVAMed.ps1    # Installation & launcher script
@@ -66,10 +66,29 @@ Before starting, make sure you have:
 -   Windows 10 / Windows 11
 -   Git installed
 -   NVIDIA GPU + CUDA driver installed
--   At least **8 GB RAM** ????????????????????????????? (more recommended for large medical images)
 -   Miniconda / Anaconda
     
 
+**GPU Requirements / Notes**
+
+-   **Minimum GPU VRAM:**  
+    A single GPU with **≥ 24 GB VRAM** is recommended for comfortable inference.  
+    Examples:
+    
+    -   RTX 3090 (~24 GB)
+    -   RTX 4090 (~24 GB)
+        
+-   **Multiple GPUs:**  
+    If your GPU has less than 24 GB VRAM, you can try splitting the model across multiple GPUs using the `--num-gpus` flag in the `model_worker` script.
+    
+    **Example (split across 2 GPUs):**
+    
+    ```bash
+    python -m llava.serve.model_worker ` --host  0.0.0.0 ` --controller http://localhost:10000 ` --port  40000 ` --worker http://localhost:40000 ` --model-path microsoft/llava-med-v1.5-mistral-7b ` --multi-modal ` --num-gpus  2
+    ``` 
+    
+    This will attempt to share the model across 2 GPUs for inference.
+    
 ----------
 
 ## Option A: Install & Run LLaVA-Med using PowerShell Script
@@ -79,7 +98,7 @@ This method automatically:
 -   Creates Conda environment `llava-med`
 -   Installs required Python packages
 -   Uninstalls conflicting packages (Windows workaround)
--   Launches instructions for three inference components
+-   Launches Controller, Model Worker, and Web UI automatically in separate PowerShell windows
 
 ----------
 
@@ -100,34 +119,19 @@ The script will:
 
 -   Check for GPU
 -   Install dependencies
--   Provide instructions to run **Controller**, **Model Worker**, & **Web UI**
-    
+-   Automatically open three PowerShell windows for Controller, Model Worker, and Web UI
 
-----------
+Once the services are running, open your browser at:
+-  [http://localhost:7860](http://localhost:7860)
 
-### 3. Launch Inference
+Upload medical images or use default images and start interacting with LLaVA-Med.
 
-Open **three separate PowerShell windows**:
 
-**Window 1 – Controller**:
-```bash
-python -m llava.serve.controller --host  0.0.0.0  --port  10000
-```
-**Window 2 – Model Worker**:
+**Note:** While asking questions in the Web UI, you may occasionally see this error:
 
-`python -m llava.serve.model_worker --controller http://localhost:10000  --port  40000  --worker http://localhost:40000  --model-path microsoft/llava-med-v1.5-mistral-7b  --multi-modal` 
+> **NETWORK ERROR DUE TO HIGH TRAFFIC. PLEASE REGENERATE OR REFRESH THIS PAGE.**
 
-**Window 3 – Web UI (Gradio)**:
-
-```bas
-hpython -m llava.serve.gradio_web_server --controller http://localhost:10000  --port  7860
-```
-
-Open your browser at:
-
-👉 [http://localhost:7860](http://localhost:7860)
-
-Upload medical images and start interacting with LLaVA-Med.
+This happens if multiple requests are sent simultaneously or the model is processing a large request. Simply **refresh the page** or **regenerate the answer** to continue.
 
 ----------
 
@@ -184,9 +188,28 @@ pip install "accelerate<0.27"  "transformers<4.39"`
 ```
 ----------
 
-### 6. Run Inference
+### 3. Launch Inference
 
-Use the same **three-window approach** as described in Option A.
+Open **three separate PowerShell windows**:
+
+**Window 1 – Controller**:
+```bash
+python -m llava.serve.controller --host  0.0.0.0  --port  10000
+```
+**Window 2 – Model Worker**:
+
+`python -m llava.serve.model_worker --controller http://localhost:10000  --port  40000  --worker http://localhost:40000  --model-path microsoft/llava-med-v1.5-mistral-7b  --multi-modal` 
+
+**Window 3 – Web UI (Gradio)**:
+
+```bash
+hpython -m llava.serve.gradio_web_server --controller http://localhost:10000  --port  7860
+```
+
+Open your browser at:
+- [http://localhost:7860](http://localhost:7860)
+
+Upload medical images and start interacting with LLaVA-Med.
 
 ----------
 
