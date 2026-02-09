@@ -3,7 +3,7 @@
 # ================================
 
 # --- Step 0: Variables ---
-$envName = "llava-med2"
+$envName = "llava-med"
 $pythonVersion = "3.10"
 $modelName = "microsoft/llava-med-v1.5-mistral-7b"
 
